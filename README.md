@@ -10,7 +10,7 @@ Your folder structure should look like this:
 
 D:\Videos\Youtube\Channel1\\
 
-------------------Channel2\\
+-                  -Channel2\\
 
 ------------------Channel3\\
 

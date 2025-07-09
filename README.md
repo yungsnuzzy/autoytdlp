@@ -6,14 +6,11 @@ There are 3 batch files included for windows. You also need yt-dlp from here: ht
 Initial setup:
 Start by creating folders for each channel you want to download videos for. 
 Your folder structure should look like this:
-"
-D:\
-    Videos\
-        Youtube\
-            Channel1\
-            Channel2\
-            Channel3\
-"
+
+D:\Videos\Youtube\Channel1\
+                  /Channel2\
+                  /Channel3\
+
 Once that's done, run script SetupYTDLP.bat.
 
 Start by providing the tool with the default location to save files. This is the "Youtube" folder in the structure example above. 

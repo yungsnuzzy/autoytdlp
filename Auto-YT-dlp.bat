@@ -112,4 +112,4 @@ for /d %%C in ("%channelsRoot%\*") do (
 )
 
 echo All channels processed.
-pause
+timeout 15

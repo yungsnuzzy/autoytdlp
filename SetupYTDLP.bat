@@ -66,4 +66,4 @@ if defined cookies (
 
 endlocal
 echo Download completed. Files saved in "%saveFolder%".
-pause
+timeout 10

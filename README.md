@@ -8,7 +8,7 @@ Start by creating folders for each channel you want to download videos for.
 Your folder structure should look like this:
 
 D:\
-    Videos\
+>    Videos\
         Youtube\
             Channel1\
             Channel2\

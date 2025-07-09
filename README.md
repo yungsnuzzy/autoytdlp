@@ -1,2 +1,20 @@
 # autoytdlp
-Auto downloads youtube videos per channel, and updates/maintains them automaticalls
+Auto downloads youtube videos per channel, and updates/maintains them automatically. 
+
+There are 3 batch files included for windows. You also need yt-dlp from here: https://github.com/yt-dlp/yt-dlp, and should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
+
+Initial setup:
+Start by creating folders for each channel you want to download videos for. 
+Your folder structure should look like this:
+
+D:\
+    Videos\
+        Youtube\
+            Channel1\
+            Channel2\
+            Channel3\
+
+Once that's done, run script SetupYTDLP.bat.
+
+Start by providing the tool with the default location to save files. This is the "Youtube" folder in the structure example above. 
+It will create a default.cfg file next to wherever you placed the script, containing the location you provided. 

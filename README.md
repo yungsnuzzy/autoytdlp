@@ -9,7 +9,7 @@ Your folder structure should look like this:
 
 D:\
 >    Videos\
-        Youtube\
+    >>    Youtube\
             Channel1\
             Channel2\
             Channel3\

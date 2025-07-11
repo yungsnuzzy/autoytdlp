@@ -98,6 +98,13 @@ if errorlevel 1 (
         if /I not "!channelLink:~-7!"=="/videos" (
             set "channelLink=!channelLink!/videos"
         )
+        REM Network check for URL
+        powershell -Command ^
+            "$url='!channelLink!';try{(Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10).StatusCode -eq 200}catch{exit 1}"
+        if errorlevel 1 (
+            powershell write-host -fore Red "URL is not reachable. Please check and try again."
+            goto :addChannelsLoop
+        )
         REM Extract channel name after @ and before next / from the URL
         set "channelFolderName="
         echo "!channelLink!" | findstr /c:"@" >nul
@@ -153,9 +160,9 @@ for %%K in ("%USERPROFILE%\Downloads\*cookies.txt") do (
         set "cookiesFile=%%K"
         echo [INFO] Found cookies.txt file. >> "%scriptdir%Auto-YT-dlp.log"
         powershell write-host -fore Yellow "Found cookies file: %%K"
-        goto :foundCookies
     )
 )
+REM Now jump to :foundCookies after the loop
 if not defined cookiesFile (
     echo [WARN] Unable to find cookies.txt file. >> "%scriptdir%Auto-YT-dlp.log"
     powershell write-host -fore Red "Unable to find cookies.txt file."
@@ -166,20 +173,34 @@ REM Loop through subfolders (channels)
 for /d %%C in ("%channelsRoot%\*") do (
     set "channelFolder=%%C"
     set "configFile=%%C\config.cfg"
+    set "skipChannelFlag="
     powershell write-host -fore darkgreen "**Current channel: %%~nxC"
     echo [INFO] Current Channel: %%~nxC >> "%scriptdir%Auto-YT-dlp.log"
     REM If config.cfg missing, prompt for info and create it
     if not exist "!configFile!" (
-        echo "config.cfg not found for %%~nxC."
+        echo *config.cfg not found for %%~nxC*
         set /p channelLink="Enter YouTube channel URL for %%~nxC: "
-        echo Select video quality for %%~nxC:
-        echo 1. 1080p
-        echo 2. 720p
-        set /p qualityPref="Enter 1 or 2: "
-        (
-            echo channelLink=!channelLink!
-            echo qualityPref=!qualityPref!
-        ) > "!configFile!"
+        REM Ensure URL ends with /videos
+        if /I not "!channelLink:~-7!"=="/videos" (
+            set "channelLink=!channelLink!/videos"
+        )
+        REM Network check for URL
+        powershell -Command ^
+            "$url='!channelLink!';try{(Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10).StatusCode -eq 200}catch{exit 1}"
+        if errorlevel 1 (
+            powershell write-host -fore Red "URL is not reachable. Skipping channel %%~nxC."
+            set "skipChannelFlag=1"
+        )
+        if not defined skipChannelFlag (
+            echo Select video quality for %%~nxC:
+            echo 1. 1080p
+            echo 2. 720p
+            set /p qualityPref="Enter 1 or 2: "
+            (
+                echo channelLink=!channelLink!
+                echo qualityPref=!qualityPref!
+            ) > "!configFile!"
+        )
     )
 
     REM Read config.cfg as name-value pairs
@@ -191,69 +212,83 @@ for /d %%C in ("%channelsRoot%\*") do (
         if /I "%%K"=="qualityPref" set "qualityPref=%%L"
         if /I "%%K"=="startDate" set "startDate=%%L"
     )
+    REM Ensure channelLink ends with /videos
+    if /I not "!channelLink:~-7!"=="/videos" (
+        set "channelLink=!channelLink!/videos"
+    )
+    REM Network check for URL
+    powershell -Command ^
+        "$url='!channelLink!';try{(Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 10).StatusCode -eq 200}catch{exit 1}"
+    if errorlevel 1 (
+        powershell write-host -fore Red "URL is not reachable. Skipping channel %%~nxC."
+        set "skipChannelFlag=1"
+    )
 
-    REM Set yt-dlp format string using "contains" logic
-    echo "!qualityPref!" | findstr /c:"1" >nul
-    if !errorlevel! == 0 (
-        set "format=bestvideo[height=1080]+bestaudio/best[height=1080]/best"
-    ) else (
-        echo "!qualityPref!" | findstr /c:"2" >nul
+    REM Only continue if skipChannelFlag is not set
+    if not defined skipChannelFlag (
+        REM Set yt-dlp format string using "contains" logic
+        echo "!qualityPref!" | findstr /c:"1" >nul
         if !errorlevel! == 0 (
-            set "format=bestvideo[height=720]+bestaudio/best[height=720]/best"
+            set "format=bestvideo[height=1080]+bestaudio/best[height=1080]/best"
         ) else (
-            set "format=bestvideo+bestaudio/best"
+            echo "!qualityPref!" | findstr /c:"2" >nul
+            if !errorlevel! == 0 (
+                set "format=bestvideo[height=720]+bestaudio/best[height=720]/best"
+            ) else (
+                set "format=bestvideo+bestaudio/best"
+            )
         )
-    )
 
-    REM Find latest video date in folder (Title - YYYY-MM-DD.mp4) and count files
-    echo.
-    powershell write-host -fore darkblue -back darkgray "[Searching for latest video date in folder: !channelFolder!.... please wait]"
-    set "latestDate="
-    set "fileCount=0"
-    for %%F in ("!channelFolder!\*.mp4") do (
-        set "fname=%%~nF"
-        call set "maybeDate=%%fname:~-10,10%%"
-        REM Check if date is in YYYY-MM-DD format
-        call echo !maybeDate! | findstr /r "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" >nul
-        if !errorlevel! == 0 (
-            if "!maybeDate!" GTR "!latestDate!" set "latestDate=!maybeDate!"
+        REM Find latest video date in folder (Title - YYYY-MM-DD.mp4) and count files
+        echo.
+        powershell write-host -fore darkblue -back darkgray "[Searching for latest video date in folder: !channelFolder!.... please wait]"
+        set "latestDate="
+        set "fileCount=0"
+        for %%F in ("!channelFolder!\*.mp4") do (
+            set "fname=%%~nF"
+            call set "maybeDate=%%fname:~-10,10%%"
+            REM Check if date is in YYYY-MM-DD format
+            call echo !maybeDate! | findstr /r "^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]" >nul
+            if !errorlevel! == 0 (
+                if "!maybeDate!" GTR "!latestDate!" set "latestDate=!maybeDate!"
+            )
+            set /a fileCount+=1
         )
-        set /a fileCount+=1
-    )
-    echo.
-    powershell write-host -fore DarkCyan "Number of .mp4 files for %%~nxC: !fileCount!"
-    powershell write-host -fore Green -back white "Latest video date found: !latestDate!"
-    echo [INFO] Latest video date found: !latestDate! >> "%scriptdir%Auto-YT-dlp.log"
+        echo.
+        powershell write-host -fore DarkCyan "Number of .mp4 files for %%~nxC: !fileCount!"
+        powershell write-host -fore Green -back white "Latest video date found: !latestDate!"
+        echo [INFO] Latest video date found: !latestDate! >> "%scriptdir%Auto-YT-dlp.log"
 
-    REM If startDate is set (from config.cfg), use it. Otherwise, use latestDate logic.
-    if defined startDate (
-        powershell write-host -fore Yellow "Using start date from config.cfg: !startDate!"
-    ) else (
-        REM If no files, set startDate to 19700101, else increment latestDate by 1 day using PowerShell
-        if not defined latestDate (
-            set "startDate=19700101"
+        REM If startDate is set (from config.cfg), use it. Otherwise, use latestDate logic.
+        if defined startDate (
+            powershell write-host -fore Yellow "Using start date from config.cfg: !startDate!"
         ) else (
-            for /f %%S in ('powershell -noprofile -command "([datetime]'!latestDate!').AddDays(1).ToString('yyyyMMdd')"') do set "startDate=%%S"
+            REM If no files, set startDate to 19700101, else increment latestDate by 1 day using PowerShell
+            if not defined latestDate (
+                set "startDate=19700101"
+            ) else (
+                for /f %%S in ('powershell -noprofile -command "([datetime]'!latestDate!').AddDays(1).ToString('yyyyMMdd')"') do set "startDate=%%S"
+            )
         )
-    )
-    set "startDate=!startDate: =!"
-    REM Run yt-dlp for this channel
-    echo Link for channel: !channelLink!
-    powershell write-host -fore Cyan "Download start date: !startDate!"
-    echo Format: !format!
-    echo Folder: !channelFolder!
-    echo.
+        set "startDate=!startDate: =!"
+        REM Run yt-dlp for this channel
+        echo Link for channel: !channelLink!
+        powershell write-host -fore Cyan "Download start date: !startDate!"
+        echo Format: !format!
+        echo Folder: !channelFolder!"
+        echo.
 
-    REM Add cookies.txt to yt-dlp command if found
-    if defined cookiesFile (
-        echo Using cookies file: !cookiesFile!
-        "!ytDlpPath!" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject --cookies "!cookiesFile!"
-    ) else (
-        echo [WARN] Running without cookies file. This might cause download failures.  >> "%scriptdir%Auto-YT-dlp.log"
-        "!ytDlpPath!" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject
+        REM Add cookies.txt to yt-dlp command if found
+        if defined cookiesFile (
+            echo Using cookies file: !cookiesFile!
+            "!ytDlpPath!" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject --cookies "!cookiesFile!"
+        ) else (
+            echo [WARN] Running without cookies file. This might cause download failures.  >> "%scriptdir%Auto-YT-dlp.log"
+            "!ytDlpPath!" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject
+        )
+        echo.
+        echo --------------------------------------------------------------------------------
     )
-    echo.
-    echo --------------------------------------------------------------------------------
 )
 echo [INFO] All channels processed. >> "%scriptdir%Auto-YT-dlp.log"
 echo All channels processed.

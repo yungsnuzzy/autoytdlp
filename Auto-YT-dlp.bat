@@ -1,4 +1,5 @@
 @echo off
+echo [INFO] Started at %Date% @ %time% >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
 setlocal enabledelayedexpansion
 echo Checking for default.cfg file...
 REM Get script directory
@@ -31,6 +32,7 @@ if not defined channelsRoot (
 
 if not defined channelsRoot (
     powershell write-host -fore Red No channels folder selected. Exiting.
+    echo [ERROR] No default channels folder was selected. >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
     exit /b 1
 )
 echo.
@@ -42,12 +44,17 @@ for %%K in ("%USERPROFILE%\Downloads\*cookies.txt") do (
         set "cookiesFile=%%K"
         powershell write-host -fore Yellow Found cookies file: %%K
     )
+    else (
+        echo [WARN] Unable to find cookies.txt file. >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
+        powershell write-host -fore Red Unable to find cookies.txt file.
+    )
 )
 REM Loop through subfolders (channels)
 for /d %%C in ("%channelsRoot%\*") do (
     set "channelFolder=%%C"
     set "configFile=%%C\config.cfg"
     powershell write-host -fore darkgreen **Current channel: %%~nxC
+    echo [INFO] Current Channel: %%~nxC >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
     REM If config.cfg missing, prompt for info and create it
     if not exist "!configFile!" (
         echo "config.cfg not found for %%~nxC."
@@ -120,11 +127,12 @@ for /d %%C in ("%channelsRoot%\*") do (
         echo Using cookies file: !cookiesFile!
         "C:\Program Files\ytdlp\yt-dlp.exe" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject --cookies "!cookiesFile!"
     ) else (
+        echo [WARN] Running without cookies file. This might cause download failures.  >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
         "C:\Program Files\ytdlp\yt-dlp.exe" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject
     )
     echo.
     echo --------------------------------------------------------------------------------
 )
-
+echo [INFO] All channels processed. >> C:\User\Admin\Documents\Routines\Auto-YT-dlp.log
 echo All channels processed.
 timeout 15

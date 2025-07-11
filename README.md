@@ -3,27 +3,28 @@ Auto downloads youtube videos per channel, and updates/maintains them automatica
 
 There are 3 batch files included for windows. You also need yt-dlp from here: https://github.com/yt-dlp/yt-dlp, and should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
 
-## Initial setup:
 
-Start by creating folders for each channel you want to download videos for. 
-Your folder structure should look like this:
+## Using Auto-YT-dlp
 
-D:\Videos\Youtube\Channel1\\|   Channel2\\   |   Channel3\\
+This script is designed to tell if you've used it before, or if this is an initial setup. 
 
-Once that's done, run script SetupYTDLP.bat.
+### First run (setup)
 
-Start by providing the tool with the default location to save files. This is the "Youtube" folder in the structure example above. 
-It will create a default.cfg file next to wherever you placed the script, containing the location you provided. 
+If this is a new setup, provide the channels root directory. The one that will contain your channel folders. 
 
-The script will then loop through the folders, in this case, channel1, channel2, and channel3. 
+You'll then be prompted to provide channel URLs and quality preferences, as well as the start date for channel downloads. If you enter 20250601, everything AFTER June 01, 2025 will be downloaded for that channel. 
 
-For each channel, it will ask for the channel link, and your quality preference. It will then save that info in config.cfg for future use. 
+### Subsequent runs
 
-Since this is your first run, provide the tool with the "start" date. If you want the entire channel, use 19700101. 
+This job can be run manually or scheduled with task manager. It will check the files present in your channel folders and download any items newer than the last one, or newer than the start date, if it's present in config.cfg in the channel folder. 
 
-After the files are downloaded, you can switch to used Auto-YT-dlp.bat. 
 
-## Using Auto-YT-dlp after setup
 
-This job can be run manually or scheduled with task manager. It will check the files present in your channel folders and download any items newer than the last one. 
+### **cookies** - Make sure you follow the steps below for providing this tool with cookies that it needs to complete downloads. 
 
+1. Open an incognito or private browsing session. 
+2. Go to youtube.com and sign in. Do not open any other tabs. 
+3. After signin, go to [youtube.com/robots.txt](https://www.youtube.com/robots.txt). 
+4. Export your cookies using a tool like : https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc
+5. **Switch the export format from JSON to NETSKOPE cookies**
+6. Use the Export As button and save the resulting file in your downloads folder. The tool will find it from there. 

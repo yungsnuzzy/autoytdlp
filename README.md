@@ -1,7 +1,19 @@
 # autoytdlp
 Auto downloads youtube videos per channel, and updates/maintains them automatically. 
 
-There are 3 batch files included for windows. You also need yt-dlp from here: https://github.com/yt-dlp/yt-dlp, and should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
+This is a single batch file designed to automatically collect, or process new youtube videos. Naming and metadata are designed for adding content to emby, plex, etc. 
+
+Currently only built for windows, but could be converted for linux, mac, etc. It's really just a heap of file commands and lazy code to make downloads simple. 
+
+### requirements
+1. You need yt-dlp from here: https://github.com/yt-dlp/yt-dlp
+2. You should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
+3. Put the downloaded script somewhere safe. It will write a few files next to itself during runs. 
+4. Check out the cookies section below. You'll need those to avoid errors. 
+
+As a note, I've scraped large channels with this script without issue/ban/etc. 
+
+PLEASE don't run 2 scripts at the same time. Really bad stuff could happen. 
 
 
 ## Using Auto-YT-dlp

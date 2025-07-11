@@ -30,6 +30,11 @@ You'll then be prompted to provide channel URLs and quality preferences, as well
 
 This job can be run manually or scheduled with task scheduler. It will check the files present in your channel folders and download any items newer than the last one, or newer than the start date, if it's present in config.cfg in the channel folder. 
 
+### Adding a new channel after your initial run
+
+To add a new channel later, simply create an empty folder alongside your existing channel folders. The tool will pick it up, ask for the URL and quality preference, and then download immediately. 
+
+*this appears to, at the moment, download all files for the channel. I'll put in a start date check here in the future*. 
 
 
 ### **cookies** - Make sure you follow the steps below for providing this tool with cookies that it needs to complete downloads. 

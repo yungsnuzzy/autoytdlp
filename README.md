@@ -5,7 +5,7 @@ This is a single batch file designed to automatically collect, or process new yo
 
 Currently only built for windows, but could be converted for linux, mac, etc. It's really just a heap of file commands and lazy code to make downloads simple. 
 
-### requirements
+### Requirements
 1. You need yt-dlp from here: https://github.com/yt-dlp/yt-dlp
 2. You should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
 3. Put the downloaded script somewhere safe. It will write a few files next to itself during runs. 
@@ -28,7 +28,7 @@ You'll then be prompted to provide channel URLs and quality preferences, as well
 
 ### Subsequent runs
 
-This job can be run manually or scheduled with task manager. It will check the files present in your channel folders and download any items newer than the last one, or newer than the start date, if it's present in config.cfg in the channel folder. 
+This job can be run manually or scheduled with task scheduler. It will check the files present in your channel folders and download any items newer than the last one, or newer than the start date, if it's present in config.cfg in the channel folder. 
 
 
 

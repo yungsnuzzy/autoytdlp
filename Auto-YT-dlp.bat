@@ -35,6 +35,14 @@ if not defined channelsRoot (
 )
 echo.
 echo.
+REM Find cookies.txt in user's Downloads folder
+set "cookiesFile="
+for %%K in ("%USERPROFILE%\Downloads\*cookies.txt") do (
+    if exist "%%K" (
+        set "cookiesFile=%%K"
+        powershell write-host -fore Yellow Found cookies file: %%K
+    )
+)
 REM Loop through subfolders (channels)
 for /d %%C in ("%channelsRoot%\*") do (
     set "channelFolder=%%C"
@@ -106,7 +114,14 @@ for /d %%C in ("%channelsRoot%\*") do (
     echo Format: !format!
     echo Folder: !channelFolder!
     echo.
-    "C:\Program Files\ytdlp\yt-dlp.exe" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject
+
+    REM Add cookies.txt to yt-dlp command if found
+    if defined cookiesFile (
+        echo Using cookies file: !cookiesFile!
+        "C:\Program Files\ytdlp\yt-dlp.exe" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject --cookies "!cookiesFile!"
+    ) else (
+        "C:\Program Files\ytdlp\yt-dlp.exe" --output "!channelFolder!\%%(title)s - %%(upload_date>%%Y-%%m-%%d)s.%%(ext)s" --format "!format!" --merge-output-format mp4 --dateafter "!startDate!" "!channelLink!" --add-metadata --break-on-reject
+    )
     echo.
     echo --------------------------------------------------------------------------------
 )

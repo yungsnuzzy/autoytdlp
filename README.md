@@ -6,7 +6,7 @@ This is a single batch file designed to automatically collect, or process new yo
 Currently only built for windows, but could be converted for linux, mac, etc. It's really just a heap of file commands and lazy code to make downloads simple. 
 
 ### Requirements
-1. You need yt-dlp from here: https://github.com/yt-dlp/yt-dlp
+1. You need a windows exe version of yt-dlp from here: https://github.com/yt-dlp/yt-dlp
 2. You should ideally bundle ffmpeg from here: https://ffmpeg.org/download.html#build-windows. Keep ffmpeg in a folder next to yt-dlp. 
 3. Put the downloaded script somewhere safe. It will write a few files next to itself during runs. 
 4. Check out the cookies section below. You'll need those to avoid errors. 
